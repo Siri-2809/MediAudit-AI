@@ -8,6 +8,7 @@ from .audit_rules import apply_audit_rules
 from .explanations import generate_explanations
 from fastapi.responses import FileResponse
 from .report_generator import generate_audit_report 
+from .llm_explainer import explain_claim_with_llm
 
 app = FastAPI(
     title="MediAudit AI API",
@@ -24,7 +25,7 @@ app.add_middleware(
 )
 
 # Analyze the dataset once when the API starts.
-claims = prepare_claims(load_claims(nrows=10000))
+claims = prepare_claims(load_claims())
 claims = detect_anomalies(claims)
 claims = apply_audit_rules(claims)
 claims = generate_explanations(claims)
@@ -96,3 +97,29 @@ def download_report(flagged_only: bool = True):
         media_type="text/csv",
         filename="audit_findings.csv",
     )
+
+
+@app.get("/api/claims/{claim_id}/ai-explanation")
+def get_ai_explanation(claim_id: str):
+    result = claims[claims["CLM_ID"].astype(str) == claim_id]
+
+    if result.empty:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    try:
+        claim = result.iloc[0].to_dict()
+        explanation = explain_claim_with_llm(claim)
+
+        return {
+            "claim_id": claim_id,
+            "ai_explanation": explanation,
+        }
+
+    except Exception as exc:
+        # Avoid returning API keys or provider error details to clients.
+        print(f"LLM ERROR: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="AI explanation is temporarily unavailable. Check the backend logs.",
+        ) from exc
+

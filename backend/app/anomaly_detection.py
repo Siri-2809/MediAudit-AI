@@ -40,7 +40,7 @@ def detect_anomalies(df):
 
 
 if __name__ == "__main__":
-    claims = load_claims(nrows=10000)
+    claims = load_claims()
     claims = prepare_claims(claims)
 
     results = detect_anomalies(claims)

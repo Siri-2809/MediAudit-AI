@@ -149,3 +149,82 @@ button.nav-item:focus-visible {
   outline: 2px solid #8ab6ff;
   outline-offset: 2px;
 }
+
+
+/* Gemini AI explanation panel */
+.ai-explanation-panel {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 14px;
+  background: var(--panel-background, #f8fafc);
+}
+
+.ai-explanation-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ai-explanation-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.ai-explanation-heading p,
+.ai-status {
+  margin: 0;
+  color: var(--muted-text, #64748b);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.ai-explanation-heading .download-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.ai-explanation-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ai-explanation-content > div {
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.ai-explanation-content h4 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.ai-explanation-content p {
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ai-error {
+  margin: 14px 0 0;
+  color: #b91c1c;
+  line-height: 1.5;
+}
+
+.ai-status {
+  margin-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .ai-explanation-content {
+    grid-template-columns: 1fr;
+  }
+}

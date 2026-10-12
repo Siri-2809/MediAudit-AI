@@ -6,7 +6,6 @@ DATA_PATH = BASE_DIR / "data" / "claims.csv"
 
 df = pd.read_csv(
     DATA_PATH,
-    nrows=10000,
     dtype={"DESYNPUF_ID": str, "CLM_ID": str}
 )
 

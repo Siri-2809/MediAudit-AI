@@ -75,7 +75,7 @@ if __name__ == "__main__":
     from .explanations import generate_explanations
     from .report_generator import generate_audit_report
 
-    claims = prepare_claims(load_claims(nrows=10000))
+    claims = prepare_claims(load_claims())
     claims = detect_anomalies(claims)
     claims = apply_audit_rules(claims)
     claims = generate_explanations(claims)

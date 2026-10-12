@@ -5,11 +5,10 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_PATH = BASE_DIR / "data" / "claims.csv"
 
 
-def load_claims(nrows=None):
+def load_claims():
     """Load inpatient claims while preserving claim identifiers."""
     df = pd.read_csv(
         DATA_PATH,
-        nrows=nrows,
         dtype={
             "DESYNPUF_ID": str,
             "CLM_ID": str,
@@ -59,7 +58,7 @@ def prepare_claims(df):
 
 
 if __name__ == "__main__":
-    claims = load_claims(nrows=10000)
+    claims = load_claims()
     prepared = prepare_claims(claims)
 
     print("Loaded shape:", claims.shape)

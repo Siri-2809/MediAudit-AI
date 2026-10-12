@@ -158,7 +158,7 @@ if __name__ == "__main__":
     from .anomaly_detection import detect_anomalies
     from .audit_rules import apply_audit_rules
 
-    claims = prepare_claims(load_claims(nrows=10000))
+    claims = prepare_claims(load_claims())
     claims = detect_anomalies(claims)
     claims = apply_audit_rules(claims)
     results = generate_explanations(claims)
