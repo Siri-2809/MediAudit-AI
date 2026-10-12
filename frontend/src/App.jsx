@@ -1,19 +1,32 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
+
   Activity,
+
   AlertTriangle,
+
   ClipboardCheck,
+
   Search,
+
   Download,
+
   ShieldCheck,
+
   RefreshCw,
+
   LayoutDashboard,
+
   FileSearch,
+
   X,
+
   ArrowUpRight,
+
   CircleCheck,
   Sparkles,
+  FileUp,
 } from "lucide-react";
 
 import "./App.css";
@@ -44,6 +57,11 @@ function App() {
   const [aiExplanation, setAiExplanation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [hasUploaded, setHasUploaded] = useState(false);
 
 
 
@@ -104,14 +122,6 @@ function App() {
     }
 
   }, [flaggedOnly]);
-
-
-
-  useEffect(() => {
-
-    loadData();
-
-  }, [loadData]);
 
 
 
@@ -200,6 +210,47 @@ function App() {
     setAiExplanation(null);
     setAiError("");
     setAiLoading(false);
+  }
+
+  async function handleUpload(event) {
+    event.preventDefault();
+    if (!uploadFile) {
+      setUploadError("Choose a CSV file first.");
+      setUploadMessage("");
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError("");
+    setUploadMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+
+      const response = await fetch(`${API}/api/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Upload failed. Please check the CSV file.");
+      }
+
+      setUploadMessage(
+        `${data.filename || uploadFile.name} analyzed successfully: ${formatNumber(data.total_claims)} claims processed.`
+      );
+      setHasUploaded(true);
+      setUploadFile(null);
+      const input = document.getElementById("claims-csv-upload");
+      if (input) input.value = "";
+      await loadData();
+    } catch (err) {
+      setUploadError(`This CSV could not be validated or analyzed. ${err.message || "Please choose a valid claims CSV file."}`);
+    } finally {
+      setUploadLoading(false);
+    }
   }
 
   async function generateAIExplanation() {
@@ -345,61 +396,114 @@ function App() {
 
             <p className="eyebrow">
 
-              WORKSPACE / {activeTab === "overview" ? "OVERVIEW" : "CLAIMS AUDIT"}
+              WORKSPACE / {!hasUploaded ? "UPLOAD DATASET" : activeTab === "overview" ? "OVERVIEW" : "CLAIMS AUDIT"}
 
             </p>
 
 
 
             <h1>
-
-              {activeTab === "overview"
-
-                ? "Claims Overview"
-
-                : "Claims Audit"}
-
+              {!hasUploaded
+                ? "Upload claims dataset"
+                : activeTab === "overview"
+                  ? "Claims Overview"
+                  : "Claims Audit"}
             </h1>
 
 
 
             <p className="subtitle">
-
-              {activeTab === "overview"
-
-                ? "Understand unusual billing patterns and review the evidence."
-
-                : "Investigate unusual claims, understand the evidence, and prepare audit findings."}
-
+              {!hasUploaded
+                ? "Upload a compatible CSV to start auditing."
+                : activeTab === "overview"
+                  ? "Understand unusual billing patterns and review the evidence."
+                  : "Investigate unusual claims, understand the evidence, and prepare audit findings."}
             </p>
 
           </div>
 
 
 
-          <button
-
-            type="button"
-
-            className="refresh-button"
-
-            onClick={loadData}
-
-            disabled={loading}
-
-          >
-
-            <RefreshCw size={16} />
-
-            {loading ? "Loading..." : "Refresh"}
-
-          </button>
+          {hasUploaded && (
+            <button
+              type="button"
+              className="refresh-button"
+              onClick={loadData}
+              disabled={loading}
+            >
+              <RefreshCw size={16} />
+              {loading ? "Loading..." : "Refresh"}
+            </button>
+          )}
 
         </header>
 
 
 
-        {error && (
+        {!hasUploaded ? (
+          <section className="upload-panel upload-first-panel">
+            <div className="upload-first-icon"><FileUp size={28} /></div>
+            <h2>Start a new audit</h2>
+            <p className="upload-first-description">
+              Upload a claims CSV to validate the data, detect unusual patterns, and generate an audit report.
+              Your dashboard will appear here after analysis succeeds.
+            </p>
+            <form className="upload-form upload-first-form" onSubmit={handleUpload}>
+              <input
+                id="claims-csv-upload"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => {
+                  setUploadFile(event.target.files?.[0] ?? null);
+                  setUploadError("");
+                  setUploadMessage("");
+                }}
+                disabled={uploadLoading}
+                aria-label="Choose claims CSV file"
+              />
+              <button type="submit" className="download-button" disabled={uploadLoading || !uploadFile}>
+                <FileUp size={16} />
+                {uploadLoading ? "Validating & analyzing..." : "Upload & Analyze"}
+              </button>
+            </form>
+            {uploadLoading && <p className="upload-status" role="status">Analyzing your file. Larger datasets may take a little while; please keep this page open.</p>}
+            {uploadError && <p className="upload-error" role="alert">{uploadError}</p>}
+            <p className="upload-first-footnote">Compatible claims CSV required. Audit flags are for human review, not proof of fraud.</p>
+          </section>
+        ) : (
+          <>
+            <section className="upload-panel upload-compact-panel">
+              <div className="upload-copy">
+                <div className="upload-icon"><FileUp size={21} /></div>
+                <div>
+                  <h2>Dataset uploaded</h2>
+                  <p>Upload another compatible CSV to replace the active audit dataset.</p>
+                </div>
+              </div>
+              <form className="upload-form" onSubmit={handleUpload}>
+                <input
+                  id="claims-csv-upload"
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={(event) => {
+                    setUploadFile(event.target.files?.[0] ?? null);
+                    setUploadError("");
+                    setUploadMessage("");
+                  }}
+                  disabled={uploadLoading}
+                  aria-label="Choose claims CSV file"
+                />
+                <button type="submit" className="download-button" disabled={uploadLoading || !uploadFile}>
+                  <FileUp size={16} />
+                  {uploadLoading ? "Analyzing CSV..." : "Upload & Analyze"}
+                </button>
+              </form>
+              {uploadLoading && <p className="upload-status" role="status">Processing the CSV. Please keep this page open.</p>}
+              {uploadMessage && <p className="upload-success" role="status">{uploadMessage}</p>}
+              {uploadError && <p className="upload-error" role="alert">{uploadError}</p>}
+            </section>
+
+            {error && (
 
           <div className="error-banner" role="alert">
 
@@ -822,6 +926,8 @@ function App() {
           </>
 
         ) : null}
+          </>
+        )}
 
       </main>
 
