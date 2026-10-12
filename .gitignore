@@ -1,0 +1,49 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dataset - do not push claims data
+data/*
+!data/.gitkeep
+
+# Generated audit reports
+reports/*
+!reports/.gitkeep
+
+# Logs
+*.log
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Frontend dependencies
+frontend/node_modules/
+
+# Frontend build output
+frontend/dist/
+
+# Frontend local environment files
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Test and coverage artifacts
+.coverage
+htmlcov/
+.pytest_cache/
